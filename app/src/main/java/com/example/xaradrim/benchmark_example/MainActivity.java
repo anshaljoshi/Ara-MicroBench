@@ -1,9 +1,8 @@
 package com.example.xaradrim.benchmark_example;
 
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,53 +14,53 @@ import android.widget.CheckBox;
 import android.widget.ToggleButton;
 
 import com.example.xaradrim.benchmark_example.Tests.DataLogging.AttributeGenerator;
-import com.example.xaradrim.benchmark_example.Tests.DataLogging.ObserverCPU;
 import com.example.xaradrim.benchmark_example.Tests.Test;
 
 
 public class MainActivity extends ActionBarActivity {
 
     private Test t = null;
-    private ObserverCPU external_observer = null; // to run observer separately
+   // private ObserverMain external_observer = null; // to run observer separately
     AttributeGenerator at1 = null;
-
+    private String device_manufacturer, device_model;
+    public static String phoneType = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         t = new Test();
+
         //code added : Pardeep
         //creating the observer object to collect data
         at1 = AttributeGenerator.getInstance();
-        String device_manufacturer = Build.MANUFACTURER;
-        String device_model = Build.MODEL;
+
+        device_manufacturer = Build.MANUFACTURER;
+        device_model = Build.MODEL;
 
         System.out.println(device_manufacturer+" -> "+ device_model);
         if(device_manufacturer.contains("motorola")){
-
-            Intent intent = getIntent();//"ACTION_BATTERY_CHANGED"
-
-            String id = intent.getStringExtra(BatteryManager.EXTRA_VOLTAGE);
-            System.out.println(id);
-
-//
-//                (this).registerReceiver(this.btr, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-//
+            phoneType="moto";
+        }
+        if(device_manufacturer.contains("samsung") && device_model.contains("Nexus S")){
+            phoneType="nexus";
+        }
+        if(device_manufacturer.contains("samsung")){
+            phoneType="samsung";
+        }
         }
 
+
+
+
+    public int getVoltage()
+    {
+        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        Intent b = this.registerReceiver(null, ifilter);
+        return b.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1);
     }
 
-    private BroadcastReceiver btr = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
 
-            int  voltage= intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE,0);
-            System.out.println("vol "+ voltage);
-
-        }
-    };
-
-            @Override
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -109,11 +108,11 @@ public class MainActivity extends ActionBarActivity {
             //Code added:Pardeep
             // check box controller for data capturing
             if (((CheckBox) findViewById(R.id.dcapture_box)).isChecked()) {
-                System.out.println("Clicked -> " + ((CheckBox) findViewById(R.id.dcapture_box)).getText());
+               // System.out.println("Clicked -> " + ((CheckBox) findViewById(R.id.dcapture_box)).getText());
                 at1.addAttributeList((((CheckBox) findViewById(R.id.dcapture_box)).getText()).toString());
             }
             t.start_test();
-            at1.prepareAttributes();
+            at1.prepareAttributes(this);
 
         } else {
 
@@ -121,7 +120,7 @@ public class MainActivity extends ActionBarActivity {
 
             //Just in case if you want to stop the benchmarks but not the capturing part.
             if (((CheckBox) findViewById(R.id.dcapture_box)).isChecked()) {
-                System.out.println("Clicked -> " + ((CheckBox) findViewById(R.id.dcapture_box)).getText());
+                // System.out.println("Clicked -> " + ((CheckBox) findViewById(R.id.dcapture_box)).getText());
                 at1.emptyAttributeList();
             }
 
