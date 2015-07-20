@@ -15,4 +15,5 @@ public interface manageObservers {
     //notifies all the registered or added Test Observers.
     public void notifyObserver();
 
+//giukmyjhngutg
 }
